@@ -3,23 +3,22 @@ package com.dosmakhambetbaktiyar.stocks.scheduler;
 import com.dosmakhambetbaktiyar.stocks.client.ClientService;
 import com.dosmakhambetbaktiyar.stocks.dto.QuoteDto;
 import com.dosmakhambetbaktiyar.stocks.model.Company;
-import com.dosmakhambetbaktiyar.stocks.repository.CompanyRepository;
-import com.dosmakhambetbaktiyar.stocks.repository.QuoteRepository;
 import com.dosmakhambetbaktiyar.stocks.service.CompanyService;
 import com.dosmakhambetbaktiyar.stocks.service.QuoteService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @EnableScheduling
 public class StockSchedulerService {
 
@@ -41,12 +40,10 @@ public class StockSchedulerService {
 
     @Scheduled(fixedDelay = 60*60*1000, initialDelay = 5000)
     public void schedule(){
-
+        log.info("StockSchedulerService: Start schedule");
         List<Company> companies = updateCompanies();
 
-        BlockingQueue<Company> blockingQueue = new LinkedBlockingQueue<>(companies);
-
-        List<CompletableFuture<Optional<QuoteDto>>> futureList = blockingQueue.stream()
+        List<CompletableFuture<Optional<QuoteDto>>> futureList = companies.stream()
                 .map(c -> CompletableFuture.supplyAsync(() -> Optional.ofNullable(clientService.getStocks(c.getSymbol())),executorService)).toList();
 
         CompletableFuture.allOf(futureList.toArray(new CompletableFuture[futureList.size()]))
@@ -58,9 +55,8 @@ public class StockSchedulerService {
                             .collect(Collectors.toList())
                 ).thenAccept(quotes -> quotes.forEach(quoteService::insert));
 
-        //коллекция объектов развернуть в коллекцию quote
-        // cron заполнение данных
-        // log и тесты
+        log.info("StockSchedulerService: End schedule");
+
     }
 
     private List<Company> updateCompanies(){

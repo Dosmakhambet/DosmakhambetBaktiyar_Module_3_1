@@ -21,7 +21,6 @@ public class AppConfig {
 
     @Bean
     public ExecutorService fixedThreadPool() {
-        System.out.println(Runtime.getRuntime().availableProcessors());
         return Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 }

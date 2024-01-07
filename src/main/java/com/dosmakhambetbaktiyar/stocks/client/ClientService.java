@@ -2,9 +2,7 @@ package com.dosmakhambetbaktiyar.stocks.client;
 
 import com.dosmakhambetbaktiyar.stocks.dto.QuoteDto;
 import com.dosmakhambetbaktiyar.stocks.model.Company;
-import com.dosmakhambetbaktiyar.stocks.model.Quote;
-import com.google.gson.Gson;
-import com.google.gson.JsonParser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -13,11 +11,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
+@Slf4j
 public class ClientService {
     @Value("${iex.url}")
     private String baseUrl;
@@ -45,7 +41,7 @@ public class ClientService {
         try{
             quoteDto = restTemplate.getForEntity(url, QuoteDto.class).getBody();
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         return quoteDto;
